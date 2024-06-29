@@ -1,14 +1,17 @@
-FROM golang:1.22
+# syntax=docker/dockerfile:1
+
+##
+## Build the application from source
+##
+
+FROM golang:1.22 AS movie-rec
 
 WORKDIR /app
 
-EXPOSE 8080
+##
+## Run the tests in the container
+##
 
-COPY go.mod go.sum ./
-RUN go mod download
+FROM movie-rec AS test-movie-rec
+RUN go test -v ./...
 
-COPY *.go ./
-
-RUN CGO_ENABLED=0 GOOS=linux go build -o ./docker-gs-ping
-
-CMD ["./docker-gs-ping"]
