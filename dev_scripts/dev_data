@@ -1,0 +1,60 @@
+{ "index" : { "_index" : "movies", "_id" : "1" } }
+{ "title" : "The Matrix", "genre" : "Sci-Fi", "year" : 1999, "director" : "Lana Wachowski, Lilly Wachowski", "cast" : ["Keanu Reeves", "Laurence Fishburne", "Carrie-Anne Moss"] }
+{ "index" : { "_index" : "movies", "_id" : "2" } }
+{ "title" : "Inception", "genre" : "Sci-Fi", "year" : 2010, "director" : "Christopher Nolan", "cast" : ["Leonardo DiCaprio", "Joseph Gordon-Levitt", "Elliot Page"] }
+{ "index" : { "_index" : "movies", "_id" : "3" } }
+{ "title" : "Interstellar", "genre" : "Sci-Fi", "year" : 2014, "director" : "Christopher Nolan", "cast" : ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"] }
+{ "index" : { "_index" : "movies", "_id" : "4" } }
+{ "title" : "The Dark Knight", "genre" : "Action", "year" : 2008, "director" : "Christopher Nolan", "cast" : ["Christian Bale", "Heath Ledger", "Aaron Eckhart"] }
+{ "index" : { "_index" : "movies", "_id" : "5" } }
+{ "title" : "Pulp Fiction", "genre" : "Crime", "year" : 1994, "director" : "Quentin Tarantino", "cast" : ["John Travolta", "Uma Thurman", "Samuel L. Jackson"] }
+{ "index" : { "_index" : "movies", "_id" : "6" } }
+{ "title" : "Forrest Gump", "genre" : "Drama", "year" : 1994, "director" : "Robert Zemeckis", "cast" : ["Tom Hanks", "Robin Wright", "Gary Sinise"] }
+{ "index" : { "_index" : "movies", "_id" : "7" } }
+{ "title" : "Fight Club", "genre" : "Drama", "year" : 1999, "director" : "David Fincher", "cast" : ["Brad Pitt", "Edward Norton", "Helena Bonham Carter"] }
+{ "index" : { "_index" : "movies", "_id" : "8" } }
+{ "title" : "The Shawshank Redemption", "genre" : "Drama", "year" : 1994, "director" : "Frank Darabont", "cast" : ["Tim Robbins", "Morgan Freeman", "Bob Gunton"] }
+{ "index" : { "_index" : "movies", "_id" : "9" } }
+{ "title" : "The Godfather", "genre" : "Crime", "year" : 1972, "director" : "Francis Ford Coppola", "cast" : ["Marlon Brando", "Al Pacino", "James Caan"] }
+{ "index" : { "_index" : "movies", "_id" : "10" } }
+{ "title" : "The Lord of the Rings: The Fellowship of the Ring", "genre" : "Fantasy", "year" : 2001, "director" : "Peter Jackson", "cast" : ["Elijah Wood", "Ian McKellen", "Orlando Bloom"] }
+{ "index" : { "_index" : "movies", "_id" : "11" } }
+{ "title" : "Star Wars: Episode IV - A New Hope", "genre" : "Sci-Fi", "year" : 1977, "director" : "George Lucas", "cast" : ["Mark Hamill", "Harrison Ford", "Carrie Fisher"] }
+{ "index" : { "_index" : "movies", "_id" : "12" } }
+{ "title" : "The Silence of the Lambs", "genre" : "Thriller", "year" : 1991, "director" : "Jonathan Demme", "cast" : ["Jodie Foster", "Anthony Hopkins", "Lawrence A. Bonney"] }
+{ "index" : { "_index" : "movies", "_id" : "13" } }
+{ "title" : "Schindler's List", "genre" : "Biography", "year" : 1993, "director" : "Steven Spielberg", "cast" : ["Liam Neeson", "Ralph Fiennes", "Ben Kingsley"] }
+{ "index" : { "_index" : "movies", "_id" : "14" } }
+{ "title" : "The Lion King", "genre" : "Animation", "year" : 1994, "director" : "Roger Allers, Rob Minkoff", "cast" : ["Matthew Broderick", "Jeremy Irons", "James Earl Jones"] }
+{ "index" : { "_index" : "movies", "_id" : "15" } }
+{ "title" : "Jurassic Park", "genre" : "Adventure", "year" : 1993, "director" : "Steven Spielberg", "cast" : ["Sam Neill", "Laura Dern", "Jeff Goldblum"] }
+{ "index" : { "_index" : "movies", "_id" : "16" } }
+{ "title" : "The Avengers", "genre" : "Action", "year" : 2012, "director" : "Joss Whedon", "cast" : ["Robert Downey Jr.", "Chris Evans", "Scarlett Johansson"] }
+{ "index" : { "_index" : "movies", "_id" : "17" } }
+{ "title" : "Titanic", "genre" : "Drama", "year" : 1997, "director" : "James Cameron", "cast" : ["Leonardo DiCaprio", "Kate Winslet", "Billy Zane"] }
+{ "index" : { "_index" : "movies", "_id" : "18" } }
+{ "title" : "Avatar", "genre" : "Sci-Fi", "year" : 2009, "director" : "James Cameron", "cast" : ["Sam Worthington", "Zoe Saldana", "Sigourney Weaver"] }
+{ "index" : { "_index" : "movies", "_id" : "19" } }
+{ "title" : "Gladiator", "genre" : "Action", "year" : 2000, "director" : "Ridley Scott", "cast" : ["Russell Crowe", "Joaquin Phoenix", "Connie Nielsen"] }
+{ "index" : { "_index" : "movies", "_id" : "20" } }
+{ "title" : "The Departed", "genre" : "Crime", "year" : 2006, "director" : "Martin Scorsese", "cast" : ["Leonardo DiCaprio", "Matt Damon", "Jack Nicholson"] }
+{ "index" : { "_index" : "movies", "_id" : "21" } }
+{ "title" : "The Wolf of Wall Street", "genre" : "Biography", "year" : 2013, "director" : "Martin Scorsese", "cast" : ["Leonardo DiCaprio", "Jonah Hill", "Margot Robbie"] }
+{ "index" : { "_index" : "movies", "_id" : "22" } }
+{ "title" : "Django Unchained", "genre" : "Western", "year" : 2012, "director" : "Quentin Tarantino", "cast" : ["Jamie Foxx", "Christoph Waltz", "Leonardo DiCaprio"] }
+{ "index" : { "_index" : "movies", "_id" : "23" } }
+{ "title" : "The Godfather: Part II", "genre" : "Crime", "year" : 1974, "director" : "Francis Ford Coppola", "cast" : ["Al Pacino", "Robert De Niro", "Robert Duvall"] }
+{ "index" : { "_index" : "movies", "_id" : "24" } }
+{ "title" : "Goodfellas", "genre" : "Crime", "year" : 1990, "director" : "Martin Scorsese", "cast" : ["Robert De Niro", "Ray Liotta", "Joe Pesci"] }
+{ "index" : { "_index" : "movies", "_id" : "25" } }
+{ "title" : "The Lord of the Rings: The Return of the King", "genre" : "Fantasy", "year" : 2003, "director" : "Peter Jackson", "cast" : ["Elijah Wood", "Viggo Mortensen", "Ian McKellen"] }
+{ "index" : { "_index" : "movies", "_id" : "26" } }
+{ "title" : "The Lord of the Rings: The Two Towers", "genre" : "Fantasy", "year" : 2002, "director" : "Peter Jackson", "cast" : ["Elijah Wood", "Ian McKellen", "Viggo Mortensen"] }
+{ "index" : { "_index" : "movies", "_id" : "27" } }
+{ "title" : "Braveheart", "genre" : "Biography", "year" : 1995, "director" : "Mel Gibson", "cast" : ["Mel Gibson", "Sophie Marceau", "Patrick McGoohan"] }
+{ "index" : { "_index" : "movies", "_id" : "28" } }
+{ "title" : "Saving Private Ryan", "genre" : "Drama", "year" : 1998, "director" : "Steven Spielberg", "cast" : ["Tom Hanks", "Matt Damon", "Tom Sizemore"] }
+{ "index" : { "_index" : "movies", "_id" : "29" } }
+{ "title" : "The Green Mile", "genre" : "Drama", "year" : 1999, "director" : "Frank Darabont", "cast" : ["Tom Hanks", "Michael Clarke Duncan", "David Morse"] }
+{ "index" : { "_index" : "movies", "_id" : "30" } }
+{ "title" : "American Beauty", "genre" : "Drama", "year" : 1999, "director" : "Sam Mendes", "cast" : ["Kevin Spacey", "Annette Bening", "Thora Birch"] }
