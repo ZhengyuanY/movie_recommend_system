@@ -5,11 +5,11 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 )
 
-// TODO: add call to elasticsearch
-
-var dbAddr string = "http://elasticsearch:9200"
+var dbAddr string = fmt.Sprintf("http://%s:8082/db", os.Getenv("LOAD_BALANCER_IP"))
 
 // DefaultRootHandler handles requests to the root URL "/"
 func DefaultRootHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +60,27 @@ func GetMovieByID(index, id string) (string, error) {
 	return string(body), nil
 }
 
+// MovieHandler handles requests to the URL "/movies/$id"
+func MovieHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract the movie ID from the URL path
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) < 3 {
+		http.Error(w, "Movie ID not provided", http.StatusBadRequest)
+		return
+	}
+	id := parts[2]
+
+	// Call GetMovieByID to get the movie details
+	movieJSON, err := GetMovieByID("movies", id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error getting movie: %s", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Return the movie details as JSON
+	fmt.Fprintln(w, movieJSON)
+}
+
 func main() {
 	// Create a new ServeMux
 	mux := http.NewServeMux()
@@ -67,16 +88,7 @@ func main() {
 	// Register handlers with the mux
 	mux.HandleFunc("/", DefaultRootHandler)
 	mux.HandleFunc("/g", CallExtServiceHandler)
-
-	// Get the movie with ID 1
-	movieJSON, err := GetMovieByID("movies", "1")
-	if err != nil {
-		fmt.Printf("Error getting movie: %s\n", err)
-		return
-	}
-
-	// Print the movie JSON
-	fmt.Printf("Movie JSON: %s\n", movieJSON)
+	mux.HandleFunc("/movies/", MovieHandler)
 
 	// Start the server with the mux
 	log.Fatal(http.ListenAndServe(":8080", mux))
