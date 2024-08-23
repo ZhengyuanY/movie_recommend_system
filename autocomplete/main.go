@@ -1,95 +1,166 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
-var dbAddr string = fmt.Sprintf("http://%s:8082/db", os.Getenv("LOAD_BALANCER_IP"))
-
-// DefaultRootHandler handles requests to the root URL "/"
-func DefaultRootHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hi there, server UP!")
+type autocompleteMux struct {
+	*http.ServeMux
+	dbAddr     string
+	movieIndex string
+	timeModule func() time.Time
 }
 
-// CallExtServiceHandler handles requests to the URL "/g"
-func CallExtServiceHandler(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get("https://www.google.com/ncr")
-	if err != nil {
-		http.Error(w, "Error calling external service", http.StatusInternalServerError)
-		return
+// statusErrorMap maps an internal error code to external error code
+// -- only 404 maps to 404
+// -- return 500 otherwise
+func (acMux *autocompleteMux) statusErrorMap(statusCode int) int {
+	if statusCode == http.StatusOK {
+		slog.Warn("Not error code")
+		return http.StatusInternalServerError
 	}
-	defer resp.Body.Close() // Ensure the response body is closed
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		http.Error(w, "Error reading response body", http.StatusInternalServerError)
-		return
+	if statusCode == http.StatusNotFound {
+		return http.StatusNotFound
 	}
-
-	fmt.Fprintln(w, string(body))
+	return http.StatusInternalServerError
 }
 
-// GetMovieByID queries a movie from elasticsearch by an id
-func GetMovieByID(index, id string) (string, error) {
-	// Construct the URL
-	url := fmt.Sprintf("%s/%s/_doc/%s?pretty", dbAddr, index, id)
+// GetMovieByIDHandler handles requests to the URL "/movies/id/$id"
+// -- return movie json files on success
+func (acMux *autocompleteMux) GetMovieByIDHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract the movie ID from the URL path
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) < 4 {
+		http.Error(w, "Movie ID not provided", http.StatusBadRequest)
+		return
+	}
+	id := parts[3]
+	// TODO: validate id
 
-	// Send the GET request
+	// Construct the URL for the GET request
+	url := fmt.Sprintf("%s/%s/_doc/%s?pretty", acMux.dbAddr, acMux.movieIndex, id)
+
+	// Send the Get request
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", err
+		slog.Error("Error sending request to database: %s", err)
+		http.Error(w, fmt.Sprintf("Error getting movie ID=%s", id), acMux.statusErrorMap(http.StatusInternalServerError))
+		return
 	}
 	defer resp.Body.Close()
 
 	// Check if the response status code is 200 OK
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("error getting document ID=%s: %s", id, resp.Status)
+		slog.Error(fmt.Sprintf("Error getting document ID=%s: %s", id, resp.Status))
+		http.Error(w, fmt.Sprintf("Error getting document ID=%s", id), acMux.statusErrorMap(http.StatusInternalServerError))
+		return
 	}
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
-	}
-
-	return string(body), nil
-}
-
-// MovieHandler handles requests to the URL "/movies/$id"
-func MovieHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract the movie ID from the URL path
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 3 {
-		http.Error(w, "Movie ID not provided", http.StatusBadRequest)
-		return
-	}
-	id := parts[2]
-
-	// Call GetMovieByID to get the movie details
-	movieJSON, err := GetMovieByID("movies", id)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error getting movie: %s", err), http.StatusInternalServerError)
+		slog.Error(fmt.Sprintf("Error reading response body: %s", err))
+		http.Error(w, fmt.Sprintf("Error getting document ID=%s", id), acMux.statusErrorMap(http.StatusInternalServerError))
 		return
 	}
 
 	// Return the movie details as JSON
-	fmt.Fprintln(w, movieJSON)
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, string(body)+fmt.Sprintf("%v", acMux.timeModule()))
+}
+
+// AutocompleteHandler handles requests to the URL "/autocomplete/$query"
+// -- search movies that match the provided query text
+// -- return movie json files on success
+func (acMux *autocompleteMux) AutocompleteHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract the query from the URL path
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) < 3 {
+		http.Error(w, "Query not provided", http.StatusBadRequest)
+		return
+	}
+	query := parts[2]
+
+	// Prepare the Get request
+	requestBody := map[string]interface{}{
+		"query": map[string]interface{}{
+			"simple_query_string": map[string]interface{}{
+				"query":  query,
+				"fields": []string{"*"},
+			},
+		},
+	}
+	requestBodyJson, err := json.Marshal(requestBody)
+	if err != nil {
+		slog.Error(fmt.Sprintf("Error getting movie by query=%s, %s", query, err))
+		http.Error(w, fmt.Sprintf("Error getting movie by query=%s", query), acMux.statusErrorMap(http.StatusInternalServerError))
+		return
+	}
+	url := fmt.Sprintf("%s/%s/_search/?pretty", acMux.dbAddr, acMux.movieIndex)
+	req, err := http.NewRequest("GET", url, bytes.NewReader(requestBodyJson))
+	if err != nil {
+		slog.Error(fmt.Sprintf("Error getting movie by query=%s, %s", query, err))
+		http.Error(w, fmt.Sprintf("Error getting movie by query=%s", query), acMux.statusErrorMap(http.StatusInternalServerError))
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send the GET request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		slog.Error(fmt.Sprintf("Error getting movie by query=%s, %s", query, err))
+		http.Error(w, fmt.Sprintf("Error getting movie by query=%s", query), acMux.statusErrorMap(http.StatusInternalServerError))
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check if the response status code is 200 OK
+	if resp.StatusCode != http.StatusOK {
+		slog.Error(fmt.Sprintf("Error getting document query=%s: %s", query, resp.Status))
+		http.Error(w, fmt.Sprintf("Error getting document query=%s", query), acMux.statusErrorMap(http.StatusInternalServerError))
+		return
+	}
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		slog.Error(fmt.Sprintf("Error reading response body: %s", err))
+		http.Error(w, fmt.Sprintf("Error getting document query=%s", query), acMux.statusErrorMap(http.StatusInternalServerError))
+		return
+	}
+
+	// Return the movie details as JSON
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, string(body))
+}
+
+func start() {
+	// Create a new mux
+	acMux := &autocompleteMux{
+		ServeMux:   http.NewServeMux(),
+		dbAddr:     fmt.Sprintf("http://%s:8082/db", os.Getenv("LOAD_BALANCER_IP")),
+		movieIndex: "movies",
+		timeModule: time.Now,
+	}
+
+	// Register handlers with the mux
+	acMux.HandleFunc("/movies/id/", acMux.GetMovieByIDHandler)
+	acMux.HandleFunc("/autocomplete/", acMux.AutocompleteHandler)
+
+	// Start the server with the mux
+	log.Fatal(http.ListenAndServe(":8080", acMux))
 }
 
 func main() {
-	// Create a new ServeMux
-	mux := http.NewServeMux()
-
-	// Register handlers with the mux
-	mux.HandleFunc("/", DefaultRootHandler)
-	mux.HandleFunc("/g", CallExtServiceHandler)
-	mux.HandleFunc("/movies/", MovieHandler)
-
-	// Start the server with the mux
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	start()
 }
