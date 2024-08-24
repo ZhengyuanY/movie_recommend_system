@@ -39,12 +39,19 @@ func (acMux *autocompleteMux) statusErrorMap(statusCode int) int {
 func (acMux *autocompleteMux) GetMovieByIDHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract the movie ID from the URL path
 	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 4 {
-		http.Error(w, "Movie ID not provided", http.StatusBadRequest)
+	if len(parts) != 4 {
+		slog.Error("Incorrect number of  path segments")
+		http.Error(w, "Incorrect number of  path segments", http.StatusBadRequest)
 		return
 	}
 	id := parts[3]
-	// TODO: validate id
+
+	// Check if ID is less than 512 bytes
+	if len(id) > 512 {
+		slog.Error("Movie ID exceeds allowed length")
+		http.Error(w, "Movie ID exceeds allowed length", http.StatusBadRequest)
+		return
+	}
 
 	// Construct the URL for the GET request
 	url := fmt.Sprintf("%s/%s/_doc/%s?pretty", acMux.dbAddr, acMux.movieIndex, id)
@@ -61,7 +68,7 @@ func (acMux *autocompleteMux) GetMovieByIDHandler(w http.ResponseWriter, r *http
 	// Check if the response status code is 200 OK
 	if resp.StatusCode != http.StatusOK {
 		slog.Error(fmt.Sprintf("Error getting document ID=%s: %s", id, resp.Status))
-		http.Error(w, fmt.Sprintf("Error getting document ID=%s", id), acMux.statusErrorMap(http.StatusInternalServerError))
+		http.Error(w, fmt.Sprintf("Error getting document ID=%s", id), acMux.statusErrorMap(resp.StatusCode))
 		return
 	}
 
@@ -84,8 +91,9 @@ func (acMux *autocompleteMux) GetMovieByIDHandler(w http.ResponseWriter, r *http
 func (acMux *autocompleteMux) AutocompleteHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract the query from the URL path
 	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 3 {
-		http.Error(w, "Query not provided", http.StatusBadRequest)
+	if len(parts) != 3 {
+		slog.Error("Incorrect number of  path segments")
+		http.Error(w, "Incorrect number of  path segments", http.StatusBadRequest)
 		return
 	}
 	query := parts[2]
